@@ -1,0 +1,703 @@
+---
+title: "Project 2"
+author: "Devosmita Chatterjee"
+date: "5/7/2021"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+## R Markdown
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+rm(list = ls())# Clear workspace environment
+cat("\014")# Clear console
+```
+
+##### Part 2. #####
+```{r}
+# Read the given data dat_intel.csv.
+data <- read.csv("C:\\Users\\devcha\\Desktop\\Project 2\\dat_intel.csv",header = TRUE)
+data
+```
+
+```{r}
+# Compute and plot the time series X where X[t] are the data points in Close.
+#png("TimeSeries.png")
+V <- data[,2]
+plot(V, type = "l", main = "Time Series Plot", sub =  expression("Daily closing stock prices of the Intel Corporation."), xlab = "day", ylab = "daily closing stock prices V[t]", col.main = "red", col.sub = "red", col.lab = "blue")
+#dev.off()
+```
+
+```{r}
+# Compute and plot the differenced log time series X[t] = log(V[t]) - log(V[t-1]) where X[t] are the data points in Close.
+#png("logTimeSeries.png")
+V <- data[,2]
+X <- matrix(, nrow = length(V)-1, ncol = 1)
+for (i in 2:length(V)) 
+{
+  X[i-1] <- log(V[i]) - log(V[i-1])
+}
+plot(X, type = "l", main = "Time Series Plot", sub = expression("Daily closing stock prices of the Intel Corporation."), xlab = "day", ylab = "log-returns X[t] = log(V[t]) - log(V[t-1])", col.main = "red", col.sub = "red", col.lab = "blue")
+#dev.off()
+```
+# Step 1. Plot the (sample) autocorrelation and partial autocorrelation functions of X for lags h = 0, . . . , 50. 
+```{r}
+# Compute the sample autocorrelation function (ACF) of the log-returns.
+ACF <- acf(X, lag = 50, type = "correlation", na.action = na.pass, plot = FALSE)
+n <- length(X)
+# Plot the sample autocorrelation function (ACF) of the log-returns.
+#png("ACF.png")
+plot(ACF, xaxt = 'no', main = "ACF Plot", sub  = expression("Sample ACF of the log-returns h = 0,...,50."), ylab = "ACF of the log-returns", xlab = "Lag", col.sub = "red", col.lab = "blue", xaxt = 'n', yaxt = 'n')
+axis(1, at = seq(1,51,1), labels = seq(0,50,1), cex.axis = 0.6)
+axis(2, at = seq(-1,1,0.1), labels = seq(-1,1,0.1), cex.axis = 0.6)
+par(las = 2)
+axis(2, at = 1.96/sqrt(n), labels = expression(+1.96/sqrt(N)), cex.axis = 0.5, col.axis = "green")
+axis(2, at = -1.96/sqrt(n), labels = expression(-1.96/sqrt(N)), cex.axis = 0.5, col.axis = "green")
+#dev.off()
+```
+
+```{r}
+# Compute whether autocorrelations are significant.
+sum = 0
+for (i in 1:51)
+{
+if (ACF$acf[i] > -1.96/sqrt(n) && ACF$acf[i] < 1.96/sqrt(n))
+{
+  sum = sum + 1
+}
+end
+}
+end
+print((sum/51)*100)
+```
+
+
+```{r}
+# Compute the partial autocorrelation function (PACF) of the log-returns.
+PACF <- acf(X, lag = 50, type = "partial", na.action = na.pass, plot = FALSE)
+# Plot the partial autocorrelation function (PACF) of the log-returns.
+#png("PACF.png")
+plot(PACF, xaxt = 'no', main = "", sub  = expression("PACF of the log-returns h = 0,...,50."), ylab = "PACF of the log-returns", xlab = "Lag", col.sub = "red", col.lab = "blue", xaxt = 'n', yaxt = 'n')
+axis(1, at = seq(1,51,1), labels = seq(0,50,1), cex.axis = 0.6)
+axis(2, at = seq(-1,1,0.1), labels = seq(-1,1,0.1), cex.axis = 0.6)
+par(las = 2)
+axis(2, at = 1.96/sqrt(n), labels = expression(+1.96/sqrt(N)), cex.axis = 0.5, col.axis = "green")
+axis(2, at = -1.96/sqrt(n), labels = expression(-1.96/sqrt(N)), cex.axis = 0.5, col.axis = "green")
+#dev.off()
+```
+
+```{r}
+# Compute whether partial autocorrelations are significant.
+sum2 = 0
+for (i in 1:50)
+{
+if (PACF$acf[i] > -1.96/sqrt(n) && PACF$acf[i] < 1.96/sqrt(n))
+{
+  sum2 = sum2 + 1
+}
+end
+}
+end
+print((sum2/50)*100)
+```
+
+# Step 2. Do a Ljung–Box test for X with h = 50.
+```{r}
+LjungBoxTest <- Box.test(X, lag=50, type="Ljung")
+LjungBoxTest
+qchisq(.95, df=50)
+qchisq(.96, df=50)
+qchisq(.9694, df=50)
+qchisq(.97, df=50)
+qchisq(.98, df=50)
+qchisq(.99, df=50)
+```
+
+# Step 1. Plot the (sample) autocorrelation and partial autocorrelation functions of X^2 for lags h = 0, . . . , 50. 
+```{r}
+# Compute the sample autocorrelation function (ACF) of the squared log-returns.
+ACF2 <- acf(X^2, lag = 50, type = "correlation", na.action = na.pass, plot = FALSE)
+n2 <- length(X^2)
+# Plot the sample autocorrelation function (ACF) of the squared log-returns.
+#png("ACF2.png")
+plot(ACF2, xaxt = 'no', main = "ACF Plot", sub  = expression("Sample ACF of the squared log-returns h = 0,...,50."), ylab = "ACF of the squared log-returns", xlab = "Lag", col.sub = "red", col.lab = "blue",  xaxt = 'n', yaxt = 'n')
+axis(1, at = seq(1,51,1), labels = seq(0,50,1), cex.axis = 0.6)
+axis(2, at = seq(-1,1,0.1), labels = seq(-1,1,0.1), cex.axis = 0.6)
+par(las = 2)
+axis(2, at = 1.96/sqrt(n2), labels = expression(+1.96/sqrt(N)), cex.axis = 0.5, col.axis = "green")
+axis(2, at = -1.96/sqrt(n2), labels = expression(-1.96/sqrt(N)), cex.axis = 0.5, col.axis = "green")
+#dev.off()
+```
+
+```{r}
+# Compute whether autocorrelations are significant.
+sum3 = 0
+for (i in 1:51)
+{
+if (ACF2$acf[i] > -1.96/sqrt(n2) && ACF2$acf[i] < 1.96/sqrt(n2))
+{
+  sum3 = sum3 + 1
+}
+end
+}
+end
+print((sum3/51)*100)
+```
+
+
+```{r}
+# Compute the partial autocorrelation function (PACF) of the squared log-returns.
+PACF2 <- acf(X^2, lag = 50, type = "partial", na.action = na.pass, plot = FALSE)
+# Plot the partial autocorrelation function (PACF) of the squared log-returns.
+#png("PACF2.png")
+plot(PACF2, xaxt = 'no', main = "PACF Plot", sub  = expression("PACF of the squared log-returns h = 0,...,50."), ylab = "PACF of the squared log-returns", xlab = "Lag", col.sub = "red", col.lab = "blue", xaxt = 'n', yaxt = 'n')
+axis(1, at = seq(1,51,1), labels = seq(0,50,1), cex.axis = 0.6)
+axis(2, at = seq(-1,1,0.1), labels = seq(-1,1,0.1), cex.axis = 0.6)
+par(las = 2)
+axis(2, at = 1.96/sqrt(n2), labels = expression(+1.96/sqrt(N)), cex.axis = 0.5, col.axis = "green")
+axis(2, at = -1.96/sqrt(n2), labels = expression(-1.96/sqrt(N)), cex.axis = 0.5, col.axis = "green")
+#dev.off()
+```
+
+```{r}
+# Compute whether partial autocorrelations are significant.
+sum4 = 0
+for (i in 1:50)
+{
+if (PACF2$acf[i] > -1.96/sqrt(n2) && PACF2$acf[i] < 1.96/sqrt(n2))
+{
+  sum4 = sum4 + 1
+}
+end
+}
+end
+print((sum4/50)*100)
+```
+
+# Step 2. Do a Ljung–Box test for X^2 with h = 50.
+```{r}
+LjungBoxTest2 <- Box.test(X^2, lag=50, type="Ljung")
+LjungBoxTest2
+qchisq(.95, df=50)
+qchisq(.96, df=50)
+qchisq(.97, df=50)
+qchisq(.98, df=50)
+qchisq(.99, df=50)
+```
+
+##### Part 3. #####
+```{r}
+#Split the time series X into a training set and a test set.
+trainingSet <- X[1:1525,1]
+testSet <- X[1526:1750,1]
+```
+
+```{r}
+#install.packages("rugarch")
+#library("rugarch")
+# Fit an ARMA model with Gaussian noise to the squared log returns obtained from the training data.
+df <- data.frame(p = integer(), q = integer(), AICC = double(), BIC = double())
+i = 1
+for (p in 0:15) 
+{
+  for (q in 0:15) 
+    {
+    if (p+q > 0 && p >= q)
+      {
+      # Specify the ARMA(p,q) model you want to fit on your data using the function arfimaspec.
+      GFSpec=arfimaspec(mean.model = list(armaOrder=c(p,q),include.mean=TRUE,arfima=FALSE))
+    
+      # Fit the model you just specified to the training dataset. 
+      GF=arfimafit(spec=GFSpec,data = trainingSet^2,solver="nloptr",solver.control = list(xtol_rel=1e-6,ftol_rel=1e-6,solver=3))
+      print(GF)
+      
+      AICC = infocriteria(GF)[1]
+      BIC = infocriteria(GF)[2]
+      df[i,] <- data.frame(p, q, AICC, BIC)
+      i = i+1
+    }
+  }
+}
+df[which(df[,3] %in% min(df[,3])),]# minimise AICC
+df[which(df[,4] %in% min(df[,4])),]# minimise BIC
+```
+
+```{r}
+# Perform Ljung–Box tests on the standardized residuals of ARMA(1,1) model with Gaussian noise.
+GFSpec=arfimaspec(mean.model = list(armaOrder=c(1,1),include.mean=TRUE,arfima=FALSE))
+GF = arfimafit(spec=GFSpec,data = trainingSet^2,solver="nloptr",solver.control = list(xtol_rel=1e-6,ftol_rel=1e-6,solver=3))
+
+StandardizedResiduals <- stdize(as.numeric(residuals(GF)[,1]))# use MuMIn package
+LjungBoxTest <- Box.test(StandardizedResiduals, lag=50, type="Ljung")
+LjungBoxTest
+qchisq(.95, df=50)
+qchisq(.96, df=50)
+qchisq(.97, df=50)
+qchisq(.98, df=50)
+qchisq(.99, df=50)
+#mean(StandardizedResiduals)
+```
+```{r}
+# Perform Ljung–Box tests on the standardized residuals of ARMA(10,8) model with Gaussian noise.
+GFSpec=arfimaspec(mean.model = list(armaOrder=c(10,8),include.mean=TRUE,arfima=FALSE))
+GF = arfimafit(spec=GFSpec,data = trainingSet^2,solver="nloptr",solver.control = list(xtol_rel=1e-6,ftol_rel=1e-6,solver=3))
+
+StandardizedResiduals <- stdize(as.numeric(residuals(GF)[,1]))# use MuMIn package
+LjungBoxTest <- Box.test(StandardizedResiduals, lag=50, type="Ljung")
+LjungBoxTest
+qchisq(.95, df=50)
+qchisq(.96, df=50)
+qchisq(.97, df=50)
+qchisq(.98, df=50)
+qchisq(.99, df=50)
+#mean(StandardizedResiduals)
+```
+
+```{r}
+# Fit an ARMA model with t-distribution noise to the squared log returns obtained from the training data.
+df2 <- data.frame(p2 = integer(), q2 = integer(), AICC2 = double(), BIC2 = double())
+i2 = 1
+for (p2 in 0:15) 
+{
+  for (q2 in 0:15) 
+    {
+    if (p2+q2 > 0 && p2 >= q2)
+      {
+      # Specify the ARMA(p,q) model you want to fit on your data using the function arfimaspec.
+      GFSpec2=arfimaspec(mean.model = list(armaOrder=c(p2,q2),include.mean=TRUE,arfima=FALSE), distribution.model = "std")
+    
+      tryCatch(
+        # This is what I want to do...
+        {
+        # Fit the model you just specified to the training dataset.
+        GF2 = arfimafit(spec=GFSpec2,data = trainingSet^2,solver="nloptr",solver.control = list(xtol_rel=1e-6,ftol_rel=1e-6,solver=3))
+        AICC2 = infocriteria(GF2)[1]
+        BIC2 = infocriteria(GF2)[2]
+        df2[i2,] <- data.frame(p2, q2, AICC2, BIC2)
+        i2 = i2+1
+        },
+        # ... but if an error occurs, tell me what happened: 
+        error=function(error_message) {
+            print('Model Not Valid')
+            return(NULL)
+        })
+    }
+  }
+}
+df2[which(df2[,3] %in% min(df2[,3])),]# minimise AICC
+df2[which(df2[,4] %in% min(df2[,4])),]# minimise BIC
+```
+
+```{r}
+# Perform Ljung–Box tests on the standardized residuals of ARMA(14,8) model with t distributed noise.
+GFSpec2=arfimaspec(mean.model = list(armaOrder=c(14,8),include.mean=TRUE,arfima=FALSE), distribution.model = "std")
+GF2 = arfimafit(spec=GFSpec2,data = trainingSet^2,solver="nloptr",solver.control = list(xtol_rel=1e-6,ftol_rel=1e-6,solver=3))
+
+StandardizedResiduals <- stdize(as.numeric(residuals(GF2)[,1]))# use MuMIn package
+LjungBoxTest3 <- Box.test(StandardizedResiduals, lag=50, type="Ljung")
+LjungBoxTest3
+qchisq(.95, df=50)
+qchisq(.96, df=50)
+qchisq(.97, df=50)
+qchisq(.98, df=50)
+qchisq(.99, df=50)
+#mean(StandardizedResiduals)
+```
+
+```{r}
+# Perform Ljung–Box tests on the standardized residuals of ARMA(2,2) model with t distributed noise.
+GFSpec2=arfimaspec(mean.model = list(armaOrder=c(2,2),include.mean=TRUE,arfima=FALSE), distribution.model = "std")
+GF2 = arfimafit(spec=GFSpec2,data = trainingSet^2,solver="nloptr",solver.control = list(xtol_rel=1e-6,ftol_rel=1e-6,solver=3))
+
+StandardizedResiduals2 <- stdize(as.numeric(residuals(GF2)[,1]))
+LjungBoxTest4 <- Box.test(StandardizedResiduals2, lag=50, type="Ljung")
+LjungBoxTest4
+qchisq(.95, df=50)
+qchisq(.96, df=50)
+qchisq(.97, df=50)
+qchisq(.98, df=50)
+qchisq(.99, df=50)
+```
+
+
+
+##### Part 4. #####
+
+
+```{r}
+# Fit an GARCH model with Gaussian noise to the log returns.
+df3 <- data.frame(p3 = integer(), q3 = integer(), AICC3 = double(), BIC3 = double())
+i3 = 1
+K = 10
+for (p3 in 0:K) 
+{
+  for (q3 in 0:K) 
+    {
+    if (p3+q3 > 0 && p3 >= q3)
+      {
+      # Specify the GARCH(p,q) model you want to fit on your data using the function ugarchspec.
+      GFSpec3 = ugarchspec(variance.model = list(model="sGARCH",garchOrder=c(p3,q3)), mean.model = list(armaOrder=c(0,0),include.mean=TRUE))
+
+      # Fit the model you just specified to the training dataset.
+      GF3 = ugarchfit(spec = GFSpec3, data = trainingSet, solver="nloptr", # Solver choice 
+                   solver.control = list(xtol_rel=1e-6,ftol_rel=1e-6,solver=3)) # Solver parameters
+      print(GF3)
+      
+      AICC3 = infocriteria(GF3)[1]
+      BIC3 = infocriteria(GF3)[2]
+      df3[i3,] <- data.frame(p3, q3, AICC3, BIC3)
+      i3 = i3+1
+    }
+  }
+}
+df3[which(df3[,3] %in% min(df3[,3])),]# minimise AICC
+df3[which(df3[,4] %in% min(df3[,4])),]# minimise BIC
+```
+```{r}
+# Fit an GARCH model with Gaussian noise to the log returns.
+df31 <- data.frame(p31 = integer(), q31 = integer(), AICC31 = double(), BIC31 = double())
+i31 = 1
+K1 = 1
+for (p31 in 0:K1) 
+{
+  for (q31 in 0:K1) 
+    {
+    if (p31+q31 > 0 && p31 >= q31)
+      {
+      # Specify the GARCH(p,q) model you want to fit on your data using the function ugarchspec.
+      GFSpec31 = ugarchspec(variance.model = list(model="sGARCH",garchOrder=c(p31,q31)), mean.model = list(armaOrder=c(0,0),include.mean=TRUE))
+
+      # Fit the model you just specified to the training dataset.
+      GF31 = ugarchfit(spec = GFSpec31, data = trainingSet, solver="nloptr", # Solver choice 
+                   solver.control = list(xtol_rel=1e-6,ftol_rel=1e-6,solver=3)) # Solver parameters
+      print(GF31)
+      
+      AICC31 = infocriteria(GF31)[1]
+      BIC31 = infocriteria(GF31)[2]
+      df31[i31,] <- data.frame(p31, q31, AICC31, BIC31)
+      i31 = i31+1
+    }
+  }
+}
+df31[which(df31[,3] %in% min(df31[,3])),]# minimise AICC
+df31[which(df31[,4] %in% min(df31[,4])),]# minimise BIC
+```
+##### Part 5. #####
+```{r}
+# Residuals of GARCH(1,1) model with Gaussian noise.
+GFSpec3 = ugarchspec(variance.model = list(model="sGARCH",garchOrder=c(1,1)), mean.model = list(armaOrder=c(0,0),include.mean=TRUE))
+GF3 = ugarchfit(spec = GFSpec3, data = trainingSet, solver="nloptr", # Solver choice 
+                   solver.control = list(xtol_rel=1e-6,ftol_rel=1e-6,solver=3)) # Solver parameters
+StandardizedResiduals3 <- stdize(as.numeric(residuals(GF3)[,1]))
+```
+
+```{r}
+# Compute the sample autocorrelation function (ACF) of the standardized residuals.
+ACF3 <- acf(StandardizedResiduals3, lag = 50, type = "correlation", na.action = na.pass, plot = FALSE)
+n3 <- length(StandardizedResiduals3)
+# Plot the sample autocorrelation function (ACF) of the standardized residuals.
+#png("ACF3.png")
+plot(ACF3, xaxt = 'no', main = "ACF Plot", sub  = expression("Sample ACF of the residuals h = 0,...,50."), ylab = "ACF of the residuals", xlab = "Lag", col.sub = "red", col.lab = "blue", xaxt = 'n', yaxt = 'n')
+axis(1, at = seq(1,51,1), labels = seq(0,50,1), cex.axis = 0.6)
+axis(2, at = seq(-1,1,0.1), labels = seq(-1,1,0.1), cex.axis = 0.6)
+par(las = 2)
+axis(2, at = 1.96/sqrt(n3), labels = expression(+1.96/sqrt(N)), cex.axis = 0.5, col.axis = "green")
+axis(2, at = -1.96/sqrt(n3), labels = expression(-1.96/sqrt(N)), cex.axis = 0.5, col.axis = "green")
+#dev.off()
+# Compute whether autocorrelations are significant.
+sum5 = 0
+for (i in 1:51)
+{
+if (ACF3$acf[i] > -1.96/sqrt(n3) && ACF3$acf[i] < 1.96/sqrt(n3))
+{
+  sum5 = sum5 + 1
+}
+end
+}
+end
+print((sum5/51)*100)
+```
+
+```{r}
+# Compute the sample autocorrelation function (ACF) of the squared standardized residuals.
+ACF4 <- acf(StandardizedResiduals3^2, lag = 50, type = "correlation", na.action = na.pass, plot = FALSE)
+n4 <- length(StandardizedResiduals3^2)
+# Plot the sample autocorrelation function (ACF) of the squared standardized residuals.
+#png("ACF4.png")
+plot(ACF4, xaxt = 'no', main = "ACF Plot", sub  = expression("Sample ACF of the squared residuals h = 0,...,50."), ylab = "ACF of the squared residuals", xlab = "Lag", col.sub = "red", col.lab = "blue", xaxt = 'n', yaxt = 'n')
+axis(1, at = seq(1,51,1), labels = seq(0,50,1), cex.axis = 0.6)
+axis(2, at = seq(-1,1,0.1), labels = seq(-1,1,0.1), cex.axis = 0.6)
+par(las = 2)
+axis(2, at = 1.96/sqrt(n4), labels = expression(+1.96/sqrt(N)), cex.axis = 0.5, col.axis = "green")
+axis(2, at = -1.96/sqrt(n4), labels = expression(-1.96/sqrt(N)), cex.axis = 0.5, col.axis = "green")
+#dev.off()
+# Compute whether autocorrelations are significant.
+sum6 = 0
+for (i in 1:51)
+{
+if (ACF4$acf[i] > -1.96/sqrt(n4) && ACF4$acf[i] < 1.96/sqrt(n4))
+{
+  sum6 = sum6 + 1
+}
+end
+}
+end
+print((sum6/51)*100)
+```
+
+```{r}
+### qqplotfunc creates the QQ-plot of a dataset with respect to a given distribution.
+### Arguments
+## Xdat : Vector containing the data for which you want to compute a QQ-plot
+## distrQuant : R function returning the quantiles of a distribution,
+# eg. qnorm for a Normal distribution, or qt for a t-Student distribution
+## ... : Replace by additional parameters needed by the quantile function.
+# For instance, replace by the argument df of the qt function when you
+# work with a t-Student distribution
+qqplotfunc<-function(Xdat,distrQuant,...){
+## Create a vector containing the values at which the quantiles
+# will be evaluated
+npts=length(Xdat)
+qvec=seq(from=0,to=1,length.out = npts)[-c(1,npts)]
+## Plot theoretical quantile VS sample quantiles
+plot(distrQuant(qvec,...), quantile(Xdat,qvec),
+main=paste0("QQ-Plot of the residuals"),
+xlab="Theoretical Quantiles",ylab="Sample Quantiles",
+pch=19,cex=0.75)
+qqline(Xdat)
+}
+#### QQ-Plot for a vector X with respect to the normal distribution
+## Compute the QQ-Plot of the residuals.
+#png("QQplot.png")
+qqplotfunc(Xdat=StandardizedResiduals3,distrQuant=qnorm)
+#dev.off()
+```
+
+##### Part 6. #####
+
+
+```{r}
+# Fit an GARCH model with t distributed noise to the log returns.
+df4 <- data.frame(p4 = integer(), q4 = integer(), AICC4 = double(), BIC4 = double())
+i4 = 1
+K2 = 14
+for (p4 in 0:K2) 
+{
+  for (q4 in 0:K2) 
+    {
+    if (p4+q4 > 0 && p4 >= q4)
+      {
+      # Specify the GARCH(p,q) model you want to fit on your data using the function ugarchspec.
+      GFSpec4 = ugarchspec(variance.model = list(model="sGARCH",garchOrder=c(p4,q4)), mean.model = list(armaOrder=c(0,0),include.mean=TRUE), distribution.model = "std")
+      
+      tryCatch(
+        # This is what I want to do...
+        {
+        # Fit the model you just specified to the training dataset 
+        GF4 = ugarchfit(spec = GFSpec4, data = trainingSet, solver="nloptr", # Solver choice 
+                   solver.control = list(xtol_rel=1e-6,ftol_rel=1e-6,solver=3)) # Solver parameters
+        AICC4 = infocriteria(GF4)[1]
+        BIC4 = infocriteria(GF4)[2]
+        df4[i4,] <- data.frame(p4, q4, AICC4, BIC4)
+        i4 = i4+1
+        },
+        # ... but if an error occurs, tell me what happened: 
+        error=function(error_message) {
+            print('Model Not Valid')
+            return(NULL)
+        })
+    }
+  }
+}
+df4[which(df4[,3] %in% min(df4[,3])),]# minimise AICC
+df4[which(df4[,4] %in% min(df4[,4])),]# minimise BIC
+```
+
+```{r}
+# Fit an GARCH model with t distributed noise to the log returns.
+df41 <- data.frame(p41 = integer(), q41 = integer(), AICC41 = double(), BIC41 = double())
+i41 = 1
+K21 = 2
+for (p41 in 0:K21) 
+{
+  for (q41 in 0:K21) 
+    {
+    if (p41+q41 > 0 && p41 >= q41)
+      {
+      # Specify the GARCH(p,q) model you want to fit on your data using the function ugarchspec.
+      GFSpec41 = ugarchspec(variance.model = list(model="sGARCH",garchOrder=c(p41,q41)), mean.model = list(armaOrder=c(0,0),include.mean=TRUE), distribution.model = "std")
+      
+      tryCatch(
+        # This is what I want to do...
+        {
+        # Fit the model you just specified to the training dataset 
+        GF41 = ugarchfit(spec = GFSpec41, data = trainingSet, solver="nloptr", # Solver choice 
+                   solver.control = list(xtol_rel=1e-6,ftol_rel=1e-6,solver=3)) # Solver parameters
+        AICC41 = infocriteria(GF41)[1]
+        BIC41 = infocriteria(GF41)[2]
+        df41[i41,] <- data.frame(p41, q41, AICC41, BIC41)
+        i41 = i41+1
+        },
+        # ... but if an error occurs, tell me what happened: 
+        error=function(error_message) {
+            print('Model Not Valid')
+            return(NULL)
+        })
+    }
+  }
+}
+df41[which(df41[,3] %in% min(df41[,3])),]# minimise AICC
+df41[which(df41[,4] %in% min(df41[,4])),]# minimise BIC
+```
+
+```{r}
+# # Residuals of GARCH(1,1) model with t distributed noise.
+GFSpec4 = ugarchspec(variance.model = list(model="sGARCH",garchOrder=c(1,1)), mean.model = list(armaOrder=c(0,0),include.mean=TRUE), distribution.model = "std")
+GF4 = ugarchfit(spec = GFSpec4, data = trainingSet, solver="nloptr", # Solver choice 
+                   solver.control = list(xtol_rel=1e-6,ftol_rel=1e-6,solver=3)) # Solver parameters
+      
+StandardizedResiduals4 <- stdize(as.numeric(residuals(GF4)[,1]))
+```
+
+```{r}
+# Compute the sample autocorrelation function (ACF) of the log-returns.
+ACF5 <- acf(StandardizedResiduals4, lag = 50, type = "correlation", na.action = na.pass, plot = FALSE)
+n5 <- length(StandardizedResiduals4)
+# Plot the sample autocorrelation function (ACF) of the log-returns.
+#png("ACF61.png")
+plot(ACF5, xaxt = 'no', main = "ACF Plot", sub  = expression("Sample ACF of the residuals h = 0,...,50."), ylab = "ACF of the residuals", xlab = "Lag", col.sub = "red", col.lab = "blue", xaxt = 'n', yaxt = 'n')
+axis(1, at = seq(1,51,1), labels = seq(0,50,1), cex.axis = 0.6)
+axis(2, at = seq(-1,1,0.1), labels = seq(-1,1,0.1), cex.axis = 0.6)
+par(las = 2)
+axis(2, at = 1.96/sqrt(n5), labels = expression(+1.96/sqrt(N)), cex.axis = 0.5, col.axis = "green")
+axis(2, at = -1.96/sqrt(n5), labels = expression(-1.96/sqrt(N)), cex.axis = 0.5, col.axis = "green")
+#dev.off()
+# Compute whether autocorrelations are significant.
+sum7 = 0
+for (i in 1:51)
+{
+if (ACF5$acf[i] > -1.96/sqrt(n5) && ACF5$acf[i] < 1.96/sqrt(n5))
+{
+  sum7 = sum7 + 1
+}
+end
+}
+end
+print((sum7/51)*100)
+```
+
+```{r}
+# Compute the sample autocorrelation function (ACF) of the log-returns.
+ACF6 <- acf(StandardizedResiduals4^2, lag = 50, type = "correlation", na.action = na.pass, plot = FALSE)
+n6 <- length(StandardizedResiduals4^2)
+# Plot the sample autocorrelation function (ACF) of the log-returns.
+#png("ACF62.png")
+plot(ACF6, xaxt = 'no', main = "ACF Plot", sub  = expression("Sample ACF of the squared residuals h = 0,...,50."), ylab = "ACF of the squared residuals", xlab = "Lag", col.sub = "red", col.lab = "blue", xaxt = 'n', yaxt = 'n')
+axis(1, at = seq(1,51,1), labels = seq(0,50,1), cex.axis = 0.6)
+axis(2, at = seq(-1,1,0.1), labels = seq(-1,1,0.1), cex.axis = 0.6)
+par(las = 2)
+axis(2, at = 1.96/sqrt(n6), labels = expression(+1.96/sqrt(N)), cex.axis = 0.5, col.axis = "green")
+axis(2, at = -1.96/sqrt(n6), labels = expression(-1.96/sqrt(N)), cex.axis = 0.5, col.axis = "green")
+#dev.off()
+# Compute whether autocorrelations are significant.
+sum8 = 0
+for (i in 1:51)
+{
+if (ACF6$acf[i] > -1.96/sqrt(n6) && ACF6$acf[i] < 1.96/sqrt(n6))
+{
+  sum8 = sum8 + 1
+}
+end
+}
+end
+print((sum8/51)*100)
+```
+
+```{r}
+#### Example: QQ-Plot for a vector X with respect to the t-Student distribution
+## Create some data
+## Compute the QQ-Plot
+#png("QQplot2.png")
+qqplotfunc(Xdat=StandardizedResiduals4,distrQuant=qt,df=30)
+#dev.off()
+```
+
+##### Part 7. #####
+```{r}
+# VaR estimation for GARCH(1,1) model with Gaussian noise.
+for (pvalue in c(0.01, 0.05, 0.1)) 
+{
+ind = 0
+for (t in 1526:1750) 
+{
+  tryCatch(
+        # This is what I want to do...
+        {
+        garch_spec = ugarchspec(variance.model = list(model = "sGARCH", garchOrder = c(1, 1)), 
+                      mean.model = list(armaOrder = c(0, 0), include.mean = FALSE), 
+                      distribution.model = "norm")
+        ugfit = ugarchfit(spec = garch_spec,data = X[1:t-1], solver="nloptr", # Solver choice 
+                 solver.control = list(xtol_rel=1e-6,ftol_rel=1e-6,solver=3)) # Solver parameters
+        forecast = ugarchforecast(ugfit,1)
+        valueatrisk = VaR(
+        R = X[1:t-1],
+        pvalue, 
+        sigma = sigma(forecast)
+        )
+        if (V[t]-V[t-1] <= valueatrisk)
+        {
+        ind = ind + 1
+        }
+        },
+        # ... but if an error occurs, tell me what happened: 
+        error=function(error_message) {
+            return(NULL)
+        })
+}
+print(pvalue)
+#count the number of breaches
+print(ind)
+}
+```
+
+```{r}
+# VaR estimation for GARCH(1,1) model with t-distributed noise.
+for (pvalue in c(0.01, 0.05, 0.1)) 
+{
+ind = 0
+for (t in 1526:1750) 
+{
+  tryCatch(
+        # This is what I want to do...
+        {
+        garch_spec = ugarchspec(variance.model = list(model = "sGARCH", garchOrder = c(1, 1)), 
+                      mean.model = list(armaOrder = c(0, 0), include.mean = FALSE), 
+                      distribution.model = "std")
+        ugfit = ugarchfit(spec = garch_spec,data = X[1:t-1], solver="nloptr", # Solver choice 
+                 solver.control = list(xtol_rel=1e-6,ftol_rel=1e-6,solver=3)) # Solver parameters
+        forecast = ugarchforecast(ugfit,1)
+        valueatrisk = VaR(
+        R = X[1:t-1],
+        pvalue, 
+        sigma = sigma(forecast)
+        )
+        if (V[t]-V[t-1] <= valueatrisk)
+        {
+        ind = ind + 1
+        }
+        },
+        # ... but if an error occurs, tell me what happened: 
+        error=function(error_message) {
+            return(NULL)
+        })
+}
+print(pvalue)
+#count the number of breaches
+print(ind)
+}
+```
